@@ -14,9 +14,9 @@ body {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(38, 138, 103, 0.2), transparent 26%),
-    radial-gradient(circle at top right, rgba(23, 119, 172, 0.18), transparent 24%),
-    linear-gradient(180deg, #0b1116 0%, #0f171a 100%);
+    radial-gradient(circle at top left, rgba(77, 211, 169, 0.18), transparent 26%),
+    radial-gradient(circle at top right, rgba(76, 118, 255, 0.15), transparent 24%),
+    linear-gradient(180deg, #09131e 0%, #0d1722 30%, #101b27 100%);
   color: #edf6f3;
 }
 
@@ -36,49 +36,49 @@ button {
 }
 
 .app-shell {
-  --bg-page: #0d1216;
-  --bg-sidebar: linear-gradient(180deg, rgba(15, 21, 25, 0.96), rgba(11, 17, 22, 0.96));
-  --bg-panel: linear-gradient(180deg, rgba(29, 32, 37, 0.97), rgba(20, 23, 28, 0.97));
-  --bg-panel-strong: linear-gradient(180deg, rgba(29, 32, 37, 0.92), rgba(23, 27, 31, 0.96));
-  --bg-soft: rgba(255, 255, 255, 0.02);
-  --border: rgba(111, 121, 133, 0.24);
-  --text: #edf6f3;
-  --text-soft: #a5bac5;
-  --text-muted: #7f8b93;
-  --nav-active: linear-gradient(135deg, rgba(33, 85, 77, 0.6), rgba(27, 52, 69, 0.7));
-  --primary: linear-gradient(135deg, #1f7d67, #2a6d8e);
-  --primary-2: linear-gradient(135deg, #1d7565, #2d6d96);
-  --shadow: rgba(12, 20, 23, 0.3);
+  --bg-page: #0b1220;
+  --bg-sidebar: linear-gradient(180deg, rgba(10, 18, 29, 0.96), rgba(14, 22, 33, 0.98));
+  --bg-panel: linear-gradient(180deg, rgba(18, 28, 38, 0.96), rgba(13, 20, 28, 0.98));
+  --bg-panel-strong: linear-gradient(180deg, rgba(20, 32, 43, 0.96), rgba(16, 25, 36, 0.98));
+  --bg-soft: rgba(160, 220, 196, 0.06);
+  --border: rgba(143, 171, 191, 0.18);
+  --text: #edf7f3;
+  --text-soft: #bdd2d9;
+  --text-muted: #8ea4ae;
+  --nav-active: linear-gradient(135deg, rgba(23, 145, 116, 0.42), rgba(43, 92, 160, 0.38));
+  --primary: linear-gradient(135deg, #1bbd8f, #4c8dff);
+  --primary-2: linear-gradient(135deg, #17a57d, #2f6bc3);
+  --shadow: rgba(6, 10, 15, 0.28);
   min-height: 100vh;
   background: var(--bg-page);
   color: var(--text);
 }
 
 .app-shell.theme-light {
-  --bg-page: #edf5f3;
-  --bg-sidebar: linear-gradient(180deg, #f9fbfb 0%, #eff4f4 100%);
-  --bg-panel: linear-gradient(180deg, #ffffff 0%, #f5f9f8 100%);
-  --bg-panel-strong: linear-gradient(180deg, #ffffff 0%, #f3f8f7 100%);
-  --bg-soft: rgba(11, 32, 45, 0.04);
-  --border: rgba(121, 143, 152, 0.28);
-  --text: #18313a;
-  --text-soft: #49616b;
-  --text-muted: #6e7c82;
-  --nav-active: linear-gradient(135deg, rgba(128, 214, 182, 0.34), rgba(176, 218, 232, 0.5));
-  --primary: linear-gradient(135deg, #2bb08b, #4e93c2);
-  --primary-2: linear-gradient(135deg, #22a67d, #3a82c4);
-  --shadow: rgba(19, 45, 52, 0.12);
+  --bg-page: #edf9f6;
+  --bg-sidebar: linear-gradient(180deg, #f7fbfb 0%, #eefaf7 100%);
+  --bg-panel: linear-gradient(180deg, #ffffff 0%, #f5fbfb 100%);
+  --bg-panel-strong: linear-gradient(180deg, #ffffff 0%, #f1faf8 100%);
+  --bg-soft: rgba(28, 104, 87, 0.05);
+  --border: rgba(101, 137, 147, 0.2);
+  --text: #163340;
+  --text-soft: #49636d;
+  --text-muted: #697d86;
+  --nav-active: linear-gradient(135deg, rgba(113, 224, 186, 0.36), rgba(161, 214, 255, 0.42));
+  --primary: linear-gradient(135deg, #22b98d, #4a9ae7);
+  --primary-2: linear-gradient(135deg, #1ea77a, #3f7cc7);
+  --shadow: rgba(18, 53, 60, 0.12);
 }
 
 .app-shell.theme-light .page-menu-button,
 .app-shell.theme-light .theme-toggle {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(238, 246, 245, 0.95));
-  color: #18313a;
-  border-color: rgba(118, 144, 151, 0.32);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(233, 246, 244, 0.96));
+  color: #163340;
+  border-color: rgba(108, 138, 150, 0.35);
 }
 
 .app-shell.theme-light .page-menu-button {
-  box-shadow: 0 12px 28px rgba(109, 142, 144, 0.14);
+  box-shadow: 0 14px 30px rgba(88, 137, 147, 0.15);
 }
 
 .page-shell {
@@ -129,15 +129,15 @@ button {
   top: 14px;
   left: 14px;
   z-index: 60;
-  background: linear-gradient(135deg, rgba(17, 38, 34, 0.94), rgba(20, 31, 39, 0.94));
-  border: 1px solid rgba(98, 146, 139, 0.4);
+  background: linear-gradient(135deg, rgba(12, 25, 33, 0.92), rgba(15, 31, 44, 0.94));
+  border: 1px solid rgba(118, 192, 176, 0.3);
   color: #edf6f3;
   border-radius: 12px;
   padding: 10px 14px;
   gap: 8px;
   align-items: center;
   cursor: pointer;
-  box-shadow: 0 12px 28px rgba(12, 20, 23, 0.3);
+  box-shadow: 0 12px 28px rgba(11, 20, 31, 0.28);
   backdrop-filter: blur(10px);
 }
 
@@ -451,6 +451,53 @@ nav {
   font-size: 12px;
   font-weight: 600;
   box-shadow: 0 10px 18px rgba(20, 96, 85, 0.2);
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  color: var(--text);
+  text-decoration: none;
+  box-shadow: 0 12px 20px var(--shadow);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.quick-action-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(118, 192, 176, 0.36);
+}
+
+.quick-action-card.highlight {
+  background: linear-gradient(135deg, rgba(27, 189, 143, 0.12), rgba(76, 141, 255, 0.12));
+}
+
+.quick-action-card svg {
+  color: #6ee0bd;
+  flex-shrink: 0;
+}
+
+.quick-action-card strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.quick-action-card span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 11px;
 }
 
 .ai-assistant-panel {
@@ -966,6 +1013,10 @@ nav {
   .bottom-grid {
     grid-template-columns: 1fr;
   }
+
+  .quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 700px) {
@@ -984,6 +1035,10 @@ nav {
   .page-shell {
     min-height: 100vh;
     padding-top: 0;
+  }
+
+  .drawer-sidebar {
+    display: flex;
   }
 
   .page-menu-button {
@@ -1005,7 +1060,7 @@ nav {
   }
 
   .main {
-    padding: 20px;
+    padding: 18px 16px 24px;
   }
 
   .page {
@@ -1017,7 +1072,34 @@ nav {
   }
 
   .topbar {
+    flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+  }
+
+  .topbar-right {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .overview-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .overview-banner-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-action-card {
+    padding: 14px 16px;
   }
 }
 

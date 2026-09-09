@@ -631,6 +631,40 @@ function Dashboard({ theme, onToggleTheme }: { theme: "dark" | "light"; onToggle
           </div>
         </div>
 
+        <div className="quick-actions">
+          <Link to="/map" className="quick-action-card highlight">
+            <Map size={18} />
+            <div>
+              <strong>Live Risk Map</strong>
+              <span>Check hotspot zones</span>
+            </div>
+          </Link>
+
+          <Link to="/alerts" className="quick-action-card">
+            <Bell size={18} />
+            <div>
+              <strong>Alert Center</strong>
+              <span>Review active warnings</span>
+            </div>
+          </Link>
+
+          <Link to="/simulation" className="quick-action-card">
+            <Activity size={18} />
+            <div>
+              <strong>Simulation</strong>
+              <span>Model scenario impact</span>
+            </div>
+          </Link>
+
+          <Link to="/public-warning" className="quick-action-card">
+            <ShieldAlert size={18} />
+            <div>
+              <strong>Public Warning</strong>
+              <span>Broadcast response timer</span>
+            </div>
+          </Link>
+        </div>
+
         {/* ===================================================
             AI ASSISTANT
         =================================================== */}
@@ -1238,7 +1272,25 @@ function AppShell() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth <= 700 : false
+  );
   const isDashboard = location.pathname === "/";
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 700px)");
+
+    const handleResize = () => setIsMobile(mediaQuery.matches);
+
+    handleResize();
+    mediaQuery.addEventListener("change", handleResize);
+
+    return () => mediaQuery.removeEventListener("change", handleResize);
+  }, []);
 
   const toggleTheme = () => {
     setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
@@ -1263,7 +1315,9 @@ function AppShell() {
 
   const shellClass = `app-shell ${theme === "light" ? "theme-light" : ""}`.trim();
 
-  if (isDashboard) {
+  const showMobileDrawer = isMobile || !isDashboard;
+
+  if (isDashboard && !showMobileDrawer) {
     return <div className={shellClass}>{routes}</div>;
   }
 
