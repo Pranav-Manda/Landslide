@@ -12,6 +12,7 @@ import {
 } from "../data/locations";
 
 import { calculateRisk } from "../services/riskEngine";
+import { syncLocationsToSupabase } from "../services/locationservice";
 
 import type { GeneratedAlert } from "../services/alertService";
 
@@ -98,6 +99,8 @@ export function AppProvider({
         JSON.stringify(locations)
       );
     }
+
+    void syncLocationsToSupabase(locations);
   }, [locations]);
 
   useEffect(() => {
@@ -106,6 +109,11 @@ export function AppProvider({
         "landwatch-alerts",
         JSON.stringify(alerts)
       );
+    }
+
+    if (typeof window !== "undefined") {
+      const payload = JSON.stringify(alerts);
+      window.localStorage.setItem("landwatch-alerts", payload);
     }
   }, [alerts]);
 

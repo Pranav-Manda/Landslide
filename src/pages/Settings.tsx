@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bell, ShieldAlert } from "lucide-react";
+
+const SETTINGS_STORAGE_KEY = "landwatch-settings";
 
 export default function Settings() {
   const [criticalThreshold, setCriticalThreshold] = useState(81);
@@ -7,6 +9,61 @@ export default function Settings() {
   const [moderateThreshold, setModerateThreshold] = useState(31);
 
   const [alertsEnabled, setAlertsEnabled] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const saved = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+
+    if (!saved) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(saved) as {
+        criticalThreshold?: number;
+        highThreshold?: number;
+        moderateThreshold?: number;
+        alertsEnabled?: boolean;
+      };
+
+      if (typeof parsed.criticalThreshold === "number") {
+        setCriticalThreshold(parsed.criticalThreshold);
+      }
+
+      if (typeof parsed.highThreshold === "number") {
+        setHighThreshold(parsed.highThreshold);
+      }
+
+      if (typeof parsed.moderateThreshold === "number") {
+        setModerateThreshold(parsed.moderateThreshold);
+      }
+
+      if (typeof parsed.alertsEnabled === "boolean") {
+        setAlertsEnabled(parsed.alertsEnabled);
+      }
+    } catch {
+      // fallback to defaults
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify({
+        criticalThreshold,
+        highThreshold,
+        moderateThreshold,
+        alertsEnabled,
+      })
+    );
+  }, [criticalThreshold, highThreshold, moderateThreshold, alertsEnabled]);
 
   return (
     <div className="main">

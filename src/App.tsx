@@ -8,9 +8,11 @@ import {
   Map,
   MapPin,
   Menu,
+  MoonStar,
   Mountain,
   ShieldAlert,
   SlidersHorizontal,
+  SunMedium,
   TrendingUp,
   PlayCircle,
   X,
@@ -25,7 +27,7 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import RiskMap from "./components/map/RiskMap";
 
@@ -158,11 +160,31 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+function ThemeToggleButton({
+  theme,
+  onToggle,
+}: {
+  theme: "dark" | "light";
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="theme-toggle"
+      onClick={onToggle}
+      aria-label={`Switch to ${theme === "dark" ? "bright" : "dark"} mode`}
+    >
+      {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={15} />}
+      <span>{theme === "dark" ? "Bright" : "Dark"}</span>
+    </button>
+  );
+}
+
 /* =========================================================
    DASHBOARD
 ========================================================= */
 
-function Dashboard() {
+function Dashboard({ theme, onToggleTheme }: { theme: "dark" | "light"; onToggleTheme: () => void }) {
   const { locations, alerts, acknowledgeAlert } = useAppStore();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
@@ -245,6 +267,31 @@ function Dashboard() {
     return `Highest risk area is ${highestRiskLocation.name} in ${highestRiskLocation.state} with a score of ${highestRiskLocation.risk.score}/100. The main contributors are ${highestRiskLocation.risk.level.toLowerCase()} rainfall and elevated soil moisture conditions.`;
   });
 
+  const [assistantHistory, setAssistantHistory] = useState<string[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    try {
+      const savedHistory = window.localStorage.getItem(
+        "landwatch-ai-history"
+      );
+
+      return savedHistory ? (JSON.parse(savedHistory) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        "landwatch-ai-history",
+        JSON.stringify(assistantHistory)
+      );
+    }
+  }, [assistantHistory]);
+
   const handleAssistantSubmit = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
@@ -282,6 +329,10 @@ function Dashboard() {
     });
 
     setAssistantAnswer(nextAnswer);
+    setAssistantHistory((currentHistory) => [
+      `${assistantQuestion} → ${nextAnswer}`,
+      ...currentHistory,
+    ].slice(0, 4));
   };
 
   return (
@@ -494,6 +545,8 @@ function Dashboard() {
             </div>
 
 
+            <ThemeToggleButton theme={theme} onToggle={onToggleTheme} />
+
             {/* NOTIFICATION BUTTON */}
 
             <div className="notification-wrapper">
@@ -607,6 +660,17 @@ function Dashboard() {
             <strong>AI Insight:</strong>
             <p>{assistantAnswer}</p>
           </div>
+
+          {assistantHistory.length > 0 && (
+            <div className="ai-assistant-history">
+              <span className="eyebrow">RECENT RECOMMENDATIONS</span>
+              <ul>
+                {assistantHistory.map((entry, index) => (
+                  <li key={`${entry}-${index}`}>{entry}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
 
@@ -1173,11 +1237,16 @@ function Dashboard() {
 function AppShell() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const isDashboard = location.pathname === "/";
+
+  const toggleTheme = () => {
+    setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
+  };
 
   const routes = (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
+      <Route path="/" element={<Dashboard theme={theme} onToggleTheme={toggleTheme} />} />
       <Route path="/demo" element={<DemoMode />} />
       <Route path="/location/:id" element={<LocationDetails />} />
       <Route path="/simulation" element={<Simulation />} />
@@ -1192,52 +1261,56 @@ function AppShell() {
     </Routes>
   );
 
+  const shellClass = `app-shell ${theme === "light" ? "theme-light" : ""}`.trim();
+
   if (isDashboard) {
-    return routes;
+    return <div className={shellClass}>{routes}</div>;
   }
 
   return (
-    <div className={`page-shell ${sidebarOpen ? "menu-open" : ""}`}>
-      <button
-        className="page-menu-button"
-        onClick={() => setSidebarOpen((open) => !open)}
-        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-        aria-expanded={sidebarOpen}
-      >
-        <Menu size={18} />
-        Menu
-      </button>
+    <div className={shellClass}>
+      <div className={`page-shell ${sidebarOpen ? "menu-open" : ""}`}>
+        <button
+          className="page-menu-button"
+          onClick={() => setSidebarOpen((open) => !open)}
+          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+          aria-expanded={sidebarOpen}
+        >
+          <Menu size={18} />
+          Menu
+        </button>
 
-      <div
-        className={`sidebar-backdrop ${sidebarOpen ? "open" : ""}`}
-        onClick={() => setSidebarOpen(false)}
-      />
+        <div
+          className={`sidebar-backdrop ${sidebarOpen ? "open" : ""}`}
+          onClick={() => setSidebarOpen(false)}
+        />
 
-      <aside className={`drawer-sidebar ${sidebarOpen ? "open" : ""}`}>
-        <div className="sidebar-close-row">
-          <button
-            className="sidebar-close-button"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Close menu"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <nav>
-          <SidebarNav onNavigate={() => setSidebarOpen(false)} />
-        </nav>
-
-        <div className="system-status">
-          <div className="status-dot" />
-          <div>
-            <strong>System Operational</strong>
-            <span>Monitoring active</span>
+        <aside className={`drawer-sidebar ${sidebarOpen ? "open" : ""}`}>
+          <div className="sidebar-close-row">
+            <button
+              className="sidebar-close-button"
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
           </div>
-        </div>
-      </aside>
 
-      <div className="page-content-wrapper">{routes}</div>
+          <nav>
+            <SidebarNav onNavigate={() => setSidebarOpen(false)} />
+          </nav>
+
+          <div className="system-status">
+            <div className="status-dot" />
+            <div>
+              <strong>System Operational</strong>
+              <span>Monitoring active</span>
+            </div>
+          </div>
+        </aside>
+
+        <div className="page-content-wrapper">{routes}</div>
+      </div>
     </div>
   );
 }

@@ -70,7 +70,7 @@ export async function syncWeatherSnapshotsToSupabase(
       created_at: new Date().toISOString(),
     }));
 
-    const { error } = await supabase.from("ai_insights").insert(rows);
+    const { error } = await supabase.from("weather_snapshots").insert(rows);
 
     if (error) {
       console.error("Weather sync failed:", error.message);
