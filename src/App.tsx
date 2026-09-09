@@ -557,6 +557,26 @@ function Dashboard() {
 
         </div>
 
+        <div className="overview-banner">
+          <div>
+            <span className="eyebrow">REGIONAL STATUS</span>
+            <h3>Monsoon conditions are elevated across key slope corridors</h3>
+          </div>
+
+          <div className="overview-banner-meta">
+            <div>
+              <strong>{criticalLocations.length}</strong>
+              <span>Critical</span>
+            </div>
+            <div>
+              <strong>{highRiskLocations.length}</strong>
+              <span>High risk</span>
+            </div>
+            <Link to="/alerts" className="primary-link">
+              Review alerts
+            </Link>
+          </div>
+        </div>
 
         {/* ===================================================
             AI ASSISTANT
