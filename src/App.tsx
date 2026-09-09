@@ -93,6 +93,15 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="nav-title">ANALYSIS</div>
 
       <NavLink
+        to="/ai-analysis"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <Brain size={17} />
+        AI Analysis
+      </NavLink>
+
+      <NavLink
         to="/analytics"
         className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
         onClick={onNavigate}
@@ -409,7 +418,7 @@ function Dashboard({ theme, onToggleTheme }: { theme: "dark" | "light"; onToggle
 
 
           <Link
-            to="/"
+            to="/ai-analysis"
             className="nav-item"
           >
             <Brain size={17} />
@@ -1303,6 +1312,7 @@ function AppShell() {
       <Route path="/location/:id" element={<LocationDetails />} />
       <Route path="/simulation" element={<Simulation />} />
       <Route path="/alerts" element={<AlertCenter />} />
+      <Route path="/ai-analysis" element={<Analytics />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/stations" element={<MonitoringStations />} />
       <Route path="/map" element={<RiskMapPage />} />

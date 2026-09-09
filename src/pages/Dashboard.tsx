@@ -461,7 +461,7 @@ export default function Dashboard() {
               </p>
 
               <Link
-                to="/analytics"
+                to="/ai-analysis"
                 className="ai-link"
               >
                 Open AI Analysis

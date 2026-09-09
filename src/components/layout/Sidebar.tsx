@@ -60,7 +60,7 @@ export default function Sidebar({
     },
     {
       label: "AI Analysis",
-      path: "/",
+      path: "/ai-analysis",
       icon: Activity,
     },
     {
