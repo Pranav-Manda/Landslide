@@ -24,8 +24,8 @@ export default function Simulation() {
   // --------------------------------------------------
   // STORE
   // --------------------------------------------------
-   const { locations, updateLocationRisk, addAlert } = useAppStore();
- 
+  const { locations, updateLocationRisk } = useAppStore();
+
 
   // --------------------------------------------------
   // SIMULATION INPUTS

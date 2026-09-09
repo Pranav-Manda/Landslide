@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Bell, ShieldAlert } from "lucide-react";
+import { Bell, ShieldAlert } from "lucide-react";
 
 export default function Settings() {
   const [criticalThreshold, setCriticalThreshold] = useState(81);

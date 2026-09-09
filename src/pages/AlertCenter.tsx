@@ -5,7 +5,6 @@ import {
   Clock,
   MapPin,
   ShieldAlert,
-  XCircle,
 } from "lucide-react";
 
 import { useAppStore } from "../store/appStore";

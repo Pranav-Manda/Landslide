@@ -7,28 +7,31 @@ import {
   Gauge,
   Map,
   MapPin,
-  Mountain,
   Menu,
+  Mountain,
   ShieldAlert,
   SlidersHorizontal,
   TrendingUp,
   PlayCircle,
+  X,
 } from "lucide-react";
 
 import {
   BrowserRouter,
   Link,
+  NavLink,
   Route,
   Routes,
   useLocation,
 } from "react-router-dom";
+
+import { useState } from "react";
 
 import RiskMap from "./components/map/RiskMap";
 
 import LocationDetails from "./pages/LocationDetails";
 import Simulation from "./pages/Simulation";
 import DemoMode from "./pages/DemoMode";
-import Sidebar from "./components/layout/Sidebar";
 import AlertCenter from "./pages/AlertCenter";
 import PublicWarning from "./pages/PublicWarning";
 import Analytics from "./pages/Analytics";
@@ -41,14 +44,127 @@ import Settings from "./pages/Settings";
 
 
 import { AppProvider, useAppStore } from "./store/appStore";
+import { getAiInsight } from "./services/aiService";
 
+function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <>
+      <div className="nav-title">MONITORING</div>
+
+      <NavLink
+        to="/public-warning"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <ShieldAlert size={18} />
+        <span>Public Warning</span>
+      </NavLink>
+
+      <NavLink
+        to="/"
+        end
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <Gauge size={17} />
+        Dashboard
+      </NavLink>
+
+      <NavLink
+        to="/map"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <Map size={17} />
+        Risk Map
+      </NavLink>
+
+      <NavLink
+        to="/locations"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <MapPin size={17} />
+        Locations
+      </NavLink>
+
+      <div className="nav-title">ANALYSIS</div>
+
+      <NavLink
+        to="/analytics"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <TrendingUp size={17} />
+        Analytics
+      </NavLink>
+
+      <NavLink
+        to="/simulation"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <Activity size={17} />
+        Simulation Center
+      </NavLink>
+
+      <NavLink
+        to="/demo"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <PlayCircle size={17} />
+        Demo Mode
+      </NavLink>
+
+      <div className="nav-title">ALERTS</div>
+
+      <NavLink
+        to="/alerts"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <Bell size={17} />
+        Alert Center
+      </NavLink>
+
+      <NavLink
+        to="/stations"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <Activity size={17} />
+        Monitoring Stations
+      </NavLink>
+
+      <NavLink
+        to="/weather"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <CloudRain size={18} />
+        Weather & Rainfall
+      </NavLink>
+
+      <NavLink
+        to="/settings"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        onClick={onNavigate}
+      >
+        <SlidersHorizontal size={17} />
+        Settings
+      </NavLink>
+    </>
+  );
+}
 
 /* =========================================================
    DASHBOARD
 ========================================================= */
 
 function Dashboard() {
-  const { locations, alerts } = useAppStore();
+  const { locations, alerts, acknowledgeAlert } = useAppStore();
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   /* =======================================================
      ACTIVE ALERTS
@@ -57,6 +173,8 @@ function Dashboard() {
   const activeAlerts = alerts.filter(
     (alert) => alert.status === "ACTIVE"
   );
+
+  const latestAlerts = activeAlerts.slice(0, 4);
 
 
   /* =======================================================
@@ -111,6 +229,60 @@ function Dashboard() {
         )
       : 0;
 
+  const highestRiskLocation = [...locations].sort(
+    (a, b) => b.risk.score - a.risk.score
+  )[0];
+
+  const [assistantQuestion, setAssistantQuestion] = useState(
+    "What needs attention right now?"
+  );
+
+  const [assistantAnswer, setAssistantAnswer] = useState(() => {
+    if (!highestRiskLocation) {
+      return "No monitored locations are available.";
+    }
+
+    return `Highest risk area is ${highestRiskLocation.name} in ${highestRiskLocation.state} with a score of ${highestRiskLocation.risk.score}/100. The main contributors are ${highestRiskLocation.risk.level.toLowerCase()} rainfall and elevated soil moisture conditions.`;
+  });
+
+  const handleAssistantSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    if (!locations.length) {
+      setAssistantAnswer("No monitored locations are available yet.");
+      return;
+    }
+
+    const topLocation = [...locations].sort(
+      (a, b) => b.risk.score - a.risk.score
+    )[0];
+
+    const criticalCount = locations.filter(
+      (location) => location.risk.level === "CRITICAL"
+    ).length;
+
+    const activeAlertCount = alerts.filter(
+      (alert) => alert.status === "ACTIVE"
+    ).length;
+
+    const nextAnswer = await getAiInsight({
+      topLocation: topLocation
+        ? {
+            name: topLocation.name,
+            state: topLocation.state,
+            score: topLocation.risk.score,
+            level: topLocation.risk.level,
+          }
+        : undefined,
+      criticalCount,
+      activeAlertCount,
+      prompt: assistantQuestion,
+    });
+
+    setAssistantAnswer(nextAnswer);
+  };
 
   return (
     <div className="app">
@@ -324,27 +496,97 @@ function Dashboard() {
 
             {/* NOTIFICATION BUTTON */}
 
-            <Link
-              to="/alerts"
-              className="notification"
-              style={{
-                textDecoration: "none",
-                position: "relative",
-              }}
-            >
+            <div className="notification-wrapper">
+              <button
+                type="button"
+                className="notification"
+                onClick={() => setNotificationOpen((open) => !open)}
+                aria-label="Open notifications"
+                aria-expanded={notificationOpen}
+              >
+                <Bell size={17} />
 
-              <Bell size={17} />
+                {activeAlerts.length > 0 && (
+                  <span className="notification-badge">
+                    {activeAlerts.length}
+                  </span>
+                )}
+              </button>
 
-              {activeAlerts.length > 0 && (
-                <span className="notification-badge">
-                  {activeAlerts.length}
-                </span>
+              {notificationOpen && (
+                <div className="notification-popover">
+                  <div className="notification-header">
+                    <strong>Notifications</strong>
+                    <Link to="/alerts" onClick={() => setNotificationOpen(false)}>
+                      View all
+                    </Link>
+                  </div>
+
+                  {latestAlerts.length === 0 ? (
+                    <div className="notification-empty">
+                      No active alerts right now.
+                    </div>
+                  ) : (
+                    <div className="notification-list">
+                      {latestAlerts.map((alert) => (
+                        <div key={alert.id} className="notification-item">
+                          <div className="notification-item-main">
+                            <span className="notification-dot" style={{ background: alert.level === "CRITICAL" ? "#b86d6d" : alert.level === "HIGH" ? "#b38a58" : "#a99b61" }} />
+                            <div>
+                              <strong>{alert.locationName}</strong>
+                              <span>{alert.level} risk</span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="notification-acknowledge"
+                            onClick={() => acknowledgeAlert(alert.id)}
+                          >
+                            Acknowledge
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
-
-            </Link>
+            </div>
 
           </div>
 
+        </div>
+
+
+        {/* ===================================================
+            AI ASSISTANT
+        =================================================== */}
+
+        <div className="ai-assistant-panel">
+          <div className="ai-assistant-header">
+            <div>
+              <span className="eyebrow">AI ASSISTANCE</span>
+              <h3>Local Decision Assistant</h3>
+            </div>
+            <span className="ai-badge">LIVE</span>
+          </div>
+
+          <form onSubmit={handleAssistantSubmit} className="ai-assistant-form">
+            <input
+              type="text"
+              value={assistantQuestion}
+              onChange={(event) =>
+                setAssistantQuestion(event.target.value)
+              }
+              placeholder="Ask about risk, alerts, or recommendations"
+            />
+            <button type="submit">Ask AI</button>
+          </form>
+
+          <div className="ai-assistant-response">
+            <strong>AI Insight:</strong>
+            <p>{assistantAnswer}</p>
+          </div>
         </div>
 
 
@@ -908,98 +1150,84 @@ function Dashboard() {
    APPLICATION ROUTES
 ========================================================= */
 
+function AppShell() {
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isDashboard = location.pathname === "/";
+
+  const routes = (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/demo" element={<DemoMode />} />
+      <Route path="/location/:id" element={<LocationDetails />} />
+      <Route path="/simulation" element={<Simulation />} />
+      <Route path="/alerts" element={<AlertCenter />} />
+      <Route path="/analytics" element={<Analytics />} />
+      <Route path="/stations" element={<MonitoringStations />} />
+      <Route path="/map" element={<RiskMapPage />} />
+      <Route path="/locations" element={<Locations />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/public-warning" element={<PublicWarning />} />
+      <Route path="/weather" element={<Weather />} />
+    </Routes>
+  );
+
+  if (isDashboard) {
+    return routes;
+  }
+
+  return (
+    <div className={`page-shell ${sidebarOpen ? "menu-open" : ""}`}>
+      <button
+        className="page-menu-button"
+        onClick={() => setSidebarOpen((open) => !open)}
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        aria-expanded={sidebarOpen}
+      >
+        <Menu size={18} />
+        Menu
+      </button>
+
+      <div
+        className={`sidebar-backdrop ${sidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`drawer-sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-close-row">
+          <button
+            className="sidebar-close-button"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <nav>
+          <SidebarNav onNavigate={() => setSidebarOpen(false)} />
+        </nav>
+
+        <div className="system-status">
+          <div className="status-dot" />
+          <div>
+            <strong>System Operational</strong>
+            <span>Monitoring active</span>
+          </div>
+        </div>
+      </aside>
+
+      <div className="page-content-wrapper">{routes}</div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-
       <AppProvider>
-
-        <Routes>
-
-          {/* DASHBOARD */}
-
-          <Route
-            path="/"
-            element={<Dashboard />}
-          />
-
-            <Route path="/demo" element={<DemoMode />} />
-          {/* LOCATION DETAILS */}
-
-          <Route
-            path="/location/:id"
-            element={<LocationDetails />}
-          />
-
-
-          {/* SIMULATION */}
-
-          <Route
-            path="/simulation"
-            element={<Simulation />}
-          />
-
-
-          {/* ALERT CENTER */}
-
-          <Route
-            path="/alerts"
-            element={<AlertCenter />}
-          />
-
-
-          {/* ANALYTICS */}
-
-          <Route
-            path="/analytics"
-            element={<Analytics />}
-          />
-
-
-          {/* MONITORING STATIONS */}
-
-          <Route
-            path="/stations"
-            element={<MonitoringStations />}
-          />
-
-
-          {/* RISK MAP */}
-
-          <Route
-            path="/map"
-            element={<RiskMapPage />}
-          />
-
-
-          {/* LOCATIONS */}
-
-          <Route
-            path="/locations"
-            element={<Locations />}
-          />
-
-
-          {/* SETTINGS */}
-
-          <Route
-            path="/settings"
-            element={<Settings />}
-          />
-          <Route path="/public-warning" element={<PublicWarning />} />
-
-
-          {/* WEATHER */}
-
-          <Route
-            path="/weather"
-            element={<Weather />}
-          />
-
-        </Routes>
-
+        <AppShell />
       </AppProvider>
-
     </BrowserRouter>
   );
 }

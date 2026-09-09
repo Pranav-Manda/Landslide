@@ -8,10 +8,42 @@ import {
   MapPin,
 } from "lucide-react";
 
+import { useEffect, useState } from "react";
+
 import { useAppStore } from "../store/appStore";
+import {
+  fetchLiveWeatherForLocations,
+  syncWeatherSnapshotsToSupabase,
+  type LiveWeatherSnapshot,
+} from "../services/weatherService";
 
 export default function Weather() {
     const { locations } = useAppStore();
+    const [liveWeather, setLiveWeather] = useState<LiveWeatherSnapshot[]>([]);
+    const [loadingWeather, setLoadingWeather] = useState(true);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadWeather = async () => {
+      setLoadingWeather(true);
+
+      const snapshots = await fetchLiveWeatherForLocations(locations);
+
+      if (!ignore) {
+        setLiveWeather(snapshots);
+        setLoadingWeather(false);
+        await syncWeatherSnapshotsToSupabase(snapshots);
+      }
+    };
+
+    loadWeather();
+
+    return () => {
+      ignore = true;
+    };
+  }, [locations]);
+
   const totalRainfall = locations.reduce(
     (sum, location) => sum + location.rainfall,
     0
@@ -20,6 +52,19 @@ export default function Weather() {
   const averageRainfall = Math.round(
     totalRainfall / locations.length
   );
+
+  const averageRainfallFallback =
+    locations.length > 0 ? averageRainfall : 0;
+
+  const liveRainfallAverage =
+    liveWeather.length > 0
+      ? Math.round(
+          liveWeather.reduce(
+            (sum, item) => sum + (item.precipitation ?? 0),
+            0
+          ) / liveWeather.length
+        )
+      : averageRainfallFallback;
 
   const averageSoilMoisture = Math.round(
     locations.reduce(
@@ -33,11 +78,11 @@ export default function Weather() {
   )[0];
 
   const rainfallIntensity =
-    averageRainfall >= 100
+    liveRainfallAverage >= 100
       ? "VERY HIGH"
-      : averageRainfall >= 70
+      : liveRainfallAverage >= 70
       ? "HIGH"
-      : averageRainfall >= 40
+      : liveRainfallAverage >= 40
       ? "MODERATE"
       : "LOW";
 
@@ -53,7 +98,7 @@ export default function Weather() {
 
         <div className="data-status">
           <span className="status-dot"></span>
-          Prototype Data
+          {loadingWeather ? "Loading live data..." : "Live weather data"}
         </div>
       </div>
 
@@ -67,7 +112,7 @@ export default function Weather() {
 
           <div>
             <span>Average Rainfall</span>
-            <strong>{averageRainfall} mm</strong>
+            <strong>{liveRainfallAverage} mm</strong>
             <small>Across monitored locations</small>
           </div>
         </div>
@@ -236,39 +281,45 @@ export default function Weather() {
             <span>RISK</span>
           </div>
 
-          {locations.map((location) => (
-            <div
-              className="weather-table-row"
-              key={location.id}
-            >
-              <div className="weather-location">
-                <MapPin size={15} />
-                <div>
-                  <strong>{location.name}</strong>
-                  <small>{location.state}</small>
-                </div>
-              </div>
+          {locations.map((location) => {
+            const weatherRecord = liveWeather.find(
+              (item) => item.locationName === location.name
+            );
 
-              <span>
-                {location.rainfall} mm
-              </span>
-
-              <span>
-                {location.soilMoisture}%
-              </span>
-
-              <span>
-                {location.slope}°
-              </span>
-
-              <span
-                className="risk-badge"
-                data-risk={location.risk.level}
+            return (
+              <div
+                className="weather-table-row"
+                key={location.id}
               >
-                {location.risk.level}
-              </span>
-            </div>
-          ))}
+                <div className="weather-location">
+                  <MapPin size={15} />
+                  <div>
+                    <strong>{location.name}</strong>
+                    <small>{location.state}</small>
+                  </div>
+                </div>
+
+                <span>
+                  {weatherRecord?.precipitation ?? location.rainfall} mm
+                </span>
+
+                <span>
+                  {weatherRecord?.humidity ?? location.soilMoisture}%
+                </span>
+
+                <span>
+                  {location.slope}°
+                </span>
+
+                <span
+                  className="risk-badge"
+                  data-risk={location.risk.level}
+                >
+                  {location.risk.level}
+                </span>
+              </div>
+            );
+          })}
 
         </div>
 
@@ -279,10 +330,8 @@ export default function Weather() {
         <CloudRain size={17} />
 
         <span>
-          <strong>Prototype environmental data:</strong>{" "}
-          Current weather and rainfall values are simulated
-          for demonstration. Real-time weather APIs and
-          field sensors can be integrated in the next version.
+          <strong>Live environmental feed:</strong>{" "}
+          Weather data is now pulled directly from Open-Meteo based on each location coordinate and synced to the app when database credentials are configured.
         </span>
       </div>
     </div>

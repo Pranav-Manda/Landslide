@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -29,21 +30,84 @@ interface AppContextType {
 
   addAlert: (alert: GeneratedAlert) => void;
 
+  acknowledgeAlert: (alertId: number) => void;
+
   resolveAlert: (alertId: number) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
+
+const buildInitialAlerts = (): GeneratedAlert[] =>
+  initialLocations
+    .filter((location) => location.risk.level !== "LOW")
+    .slice(0, 4)
+    .map((location, index) => ({
+      id: 1000 + location.id + index,
+      locationId: location.id,
+      locationName: location.name,
+      state: location.state,
+      level: location.risk.level,
+      score: location.risk.score,
+      message:
+        location.risk.level === "CRITICAL"
+          ? "Critical landslide conditions detected. Immediate field assessment and emergency preparedness are recommended."
+          : "High landslide risk detected. Increased monitoring and precautionary action is recommended.",
+      timestamp: new Date(
+        Date.now() - index * 15 * 60 * 1000
+      ).toLocaleTimeString(),
+      status: location.risk.level === "CRITICAL" ? "ACTIVE" : "ACKNOWLEDGED",
+    }));
 
 export function AppProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [locations, setLocations] =
-    useState<Location[]>(initialLocations);
+  const [locations, setLocations] = useState<Location[]>(() => {
+    if (typeof window === "undefined") {
+      return initialLocations;
+    }
 
-  const [alerts, setAlerts] =
-    useState<GeneratedAlert[]>([]);
+    const savedLocations = window.localStorage.getItem(
+      "landwatch-locations"
+    );
+
+    return savedLocations
+      ? (JSON.parse(savedLocations) as Location[])
+      : initialLocations;
+  });
+
+  const [alerts, setAlerts] = useState<GeneratedAlert[]>(() => {
+    if (typeof window === "undefined") {
+      return buildInitialAlerts();
+    }
+
+    const savedAlerts = window.localStorage.getItem(
+      "landwatch-alerts"
+    );
+
+    return savedAlerts
+      ? (JSON.parse(savedAlerts) as GeneratedAlert[])
+      : buildInitialAlerts();
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        "landwatch-locations",
+        JSON.stringify(locations)
+      );
+    }
+  }, [locations]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        "landwatch-alerts",
+        JSON.stringify(alerts)
+      );
+    }
+  }, [alerts]);
 
   // ==========================================
   // UPDATE LOCATION RISK
@@ -165,6 +229,25 @@ export function AppProvider({
   };
 
   // ==========================================
+  // ACKNOWLEDGE ALERT
+  // ==========================================
+
+  const acknowledgeAlert = (
+    alertId: number
+  ) => {
+    setAlerts((currentAlerts) =>
+      currentAlerts.map((alert) =>
+        alert.id === alertId
+          ? {
+              ...alert,
+              status: "ACKNOWLEDGED",
+            }
+          : alert
+      )
+    );
+  };
+
+  // ==========================================
   // RESOLVE ALERT
   // ==========================================
 
@@ -194,6 +277,7 @@ export function AppProvider({
         alerts,
         updateLocationRisk,
         addAlert,
+        acknowledgeAlert,
         resolveAlert,
       }}
     >
