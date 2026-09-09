@@ -117,6 +117,42 @@ button {
   backdrop-filter: blur(12px);
 }
 
+.app-shell.theme-light .drawer-sidebar {
+  background: var(--bg-sidebar);
+  border-right-color: rgba(130, 150, 155, 0.28);
+  box-shadow: 0 18px 45px rgba(52, 93, 102, 0.16);
+  color: var(--text);
+}
+
+.app-shell.theme-light .drawer-sidebar .nav-item,
+.app-shell.theme-light .drawer-sidebar .nav-title,
+.app-shell.theme-light .drawer-sidebar .system-status strong,
+.app-shell.theme-light .drawer-sidebar .system-status span,
+.app-shell.theme-light .logo span {
+  color: var(--text-soft);
+}
+
+.app-shell.theme-light .drawer-sidebar .nav-item.active,
+.app-shell.theme-light .drawer-sidebar .nav-item.active span,
+.app-shell.theme-light .drawer-sidebar .nav-title {
+  color: var(--text);
+}
+
+.app-shell.theme-light .system-status {
+  background: rgba(255, 255, 255, 0.42);
+  border-color: var(--border);
+}
+
+.app-shell.theme-light .sidebar-close-button {
+  background: rgba(240, 247, 246, 0.8);
+  border-color: rgba(130, 150, 155, 0.28);
+  color: var(--text);
+}
+
+.app-shell.theme-light .sidebar-close-button:hover {
+  background: rgba(232, 244, 242, 0.95);
+}
+
 .drawer-sidebar.open {
   transform: translateX(0);
   opacity: 1;
@@ -195,6 +231,7 @@ button {
   background: transparent;
   color: #f1f3f5;
   cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 /* SIDEBAR */
@@ -251,6 +288,20 @@ nav {
   color: #70757b;
   letter-spacing: 1.2px;
   margin: 20px 10px 8px;
+}
+
+.app-shell.theme-light .nav-title {
+  color: var(--text-muted);
+}
+
+.app-shell.theme-light .nav-item {
+  color: var(--text-soft);
+}
+
+.app-shell.theme-light .nav-item.active {
+  background: var(--nav-active);
+  color: var(--text);
+  border-color: rgba(111, 185, 164, 0.25);
 }
 
 .nav-item {

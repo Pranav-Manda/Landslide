@@ -8,11 +8,9 @@ import {
   Map,
   MapPin,
   Menu,
-  MoonStar,
   Mountain,
   ShieldAlert,
   SlidersHorizontal,
-  SunMedium,
   TrendingUp,
   PlayCircle,
   X,
@@ -169,31 +167,11 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function ThemeToggleButton({
-  theme,
-  onToggle,
-}: {
-  theme: "dark" | "light";
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="theme-toggle"
-      onClick={onToggle}
-      aria-label={`Switch to ${theme === "dark" ? "bright" : "dark"} mode`}
-    >
-      {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={15} />}
-      <span>{theme === "dark" ? "Bright" : "Dark"}</span>
-    </button>
-  );
-}
-
 /* =========================================================
    DASHBOARD
 ========================================================= */
 
-function Dashboard({ theme, onToggleTheme }: { theme: "dark" | "light"; onToggleTheme: () => void }) {
+function Dashboard() {
   const { locations, alerts, acknowledgeAlert } = useAppStore();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
@@ -552,9 +530,6 @@ function Dashboard({ theme, onToggleTheme }: { theme: "dark" | "light"; onToggle
               <span />
               LIVE MONITORING
             </div>
-
-
-            <ThemeToggleButton theme={theme} onToggle={onToggleTheme} />
 
             {/* NOTIFICATION BUTTON */}
 
@@ -1280,7 +1255,6 @@ function Dashboard({ theme, onToggleTheme }: { theme: "dark" | "light"; onToggle
 function AppShell() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth <= 700 : false
   );
@@ -1301,13 +1275,9 @@ function AppShell() {
     return () => mediaQuery.removeEventListener("change", handleResize);
   }, []);
 
-  const toggleTheme = () => {
-    setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
-  };
-
   const routes = (
     <Routes>
-      <Route path="/" element={<Dashboard theme={theme} onToggleTheme={toggleTheme} />} />
+      <Route path="/" element={<Dashboard />} />
       <Route path="/demo" element={<DemoMode />} />
       <Route path="/location/:id" element={<LocationDetails />} />
       <Route path="/simulation" element={<Simulation />} />
@@ -1323,7 +1293,7 @@ function AppShell() {
     </Routes>
   );
 
-  const shellClass = `app-shell ${theme === "light" ? "theme-light" : ""}`.trim();
+  const shellClass = "app-shell";
 
   const showMobileDrawer = isMobile || !isDashboard;
 
